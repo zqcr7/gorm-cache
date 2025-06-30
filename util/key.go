@@ -1,6 +1,7 @@
 package util
 
 import (
+	"crypto/md5"
 	"fmt"
 	"math/rand"
 	"reflect"
@@ -38,7 +39,13 @@ func GenSearchCacheKey(instanceId string, tableName string, sql string, vars ...
 			buf.WriteString(fmt.Sprintf(":%v", v))
 		}
 	}
-	return fmt.Sprintf("%s:%s:s:%s:%s", GormCachePrefix, instanceId, tableName, buf.String())
+
+	// 使用MD5哈希生成短key
+	content := buf.String()
+	hash := md5.Sum([]byte(content))
+	shortKey := fmt.Sprintf("%x", hash)
+
+	return fmt.Sprintf("%s:%s:s:%s:%s", GormCachePrefix, instanceId, tableName, shortKey)
 }
 
 func GenSearchCachePrefix(instanceId string, tableName string) string {
